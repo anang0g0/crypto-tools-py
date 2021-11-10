@@ -9,20 +9,23 @@ import os,sys
 import random
 import getpass
 from chacha20poly1305 import ChaCha20Poly1305
-from Crypto.Hash import SHA3_256,SHA256,SHA3_512,SHA512
+from hashlib import sha3_256,sha256,sha3_512,sha512
 
 
 #
 
 nonce = get_random_bytes(12)
-print(nonce)
+sha=sha3_256()
+sha.update(nonce)
+seed=int(sha.hexdigest(),16)
+#print(seed)
 #os.urandom(12)
 password = getpass.getpass('password> ')
 password2 = getpass.getpass('confirm> ')
 if password != password2:
     print('Passwords do not match.')
     sys.exit(0)
-sha = SHA3_256.new()
+sha = sha3_256()
 sha.update(password.encode())
 key = sha.digest()
 v=int.from_bytes(key,byteorder="little")
@@ -33,7 +36,7 @@ v^=a
 key=v.to_bytes(32,byteorder="little")
 
 def enc():
-    random.seed(128976192873618971)
+    random.seed(seed)
     cip = ChaCha20Poly1305(key)
     c= open("cipher.txt","wb")
     f=open("README.md", "rb")
@@ -65,7 +68,7 @@ def enc():
         
 
 def dec():
-    random.seed(128976192873618971)
+    random.seed(seed)
     c=open("cipher.txt","rb")
     f=open("plane.txt", "wb")
     cip = ChaCha20Poly1305(key)
