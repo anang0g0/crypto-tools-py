@@ -12,10 +12,6 @@ from chacha20poly1305 import ChaCha20Poly1305
 from hashlib import sha3_256,sha256,sha3_512,sha512
 
 
-#print(seed)
-#os.urandom(12)
-
-
 
 def enc():
     password = getpass.getpass('password> ')
