@@ -12,31 +12,33 @@ from chacha20poly1305 import ChaCha20Poly1305
 from hashlib import sha3_256,sha256,sha3_512,sha512
 
 
-#
-
-nonce = get_random_bytes(12)
-sha=sha3_256()
-sha.update(nonce)
-seed=int(sha.hexdigest(),16)
 #print(seed)
 #os.urandom(12)
-password = getpass.getpass('password> ')
-password2 = getpass.getpass('confirm> ')
-if password != password2:
-    print('Passwords do not match.')
-    sys.exit(0)
-sha = sha3_256()
-sha.update(password.encode())
-key = sha.digest()
-v=int.from_bytes(key,byteorder="little")
 
-key = get_random_bytes(32) #
-a=int.from_bytes(key,byteorder="little")
-v^=a
-key=v.to_bytes(32,byteorder="little")
+
 
 def enc():
+    password = getpass.getpass('password> ')
+    password2 = getpass.getpass('confirm> ')
+    if password != password2:
+        print('Passwords do not match.')
+        sys.exit(0)
+    sha = sha3_256()
+    sha.update(password.encode())
+    seed = int(sha.hexdigest(),16)
+
     random.seed(seed)
+    f=open("key.bin","wb")
+    nonce=get_random_bytes(12)
+    key=get_random_bytes(32)
+    print(key)
+    print(nonce)
+    f.write(key)
+    f.close()
+    f=open("nonce","wb")
+    f.write(nonce)
+    f.close()
+    #exit()
     cip = ChaCha20Poly1305(key)
     c= open("cipher.txt","wb")
     f=open("README.md", "rb")
@@ -64,20 +66,33 @@ def enc():
                 break
             ciphertext = cip.encrypt(nonce, ff)
             c.write(ciphertext)
-        
 
-
-        
 
 def dec():
+    password = getpass.getpass('password> ')
+    password2 = getpass.getpass('confirm> ')
+    if password != password2:
+        print('Passwords do not match.')
+        sys.exit(0)
+    sha = sha3_256()
+    sha.update(password.encode())
+    seed = int(sha.hexdigest(),16)
     random.seed(seed)
+    
+    fp=open("nonce","rb")
+    fq=open("key.bin","rb")
     c=open("cipher.txt","rb")
     f=open("plane.txt", "wb")
+    key=fq.read(32)
+    print(key)
+    nonce=fp.read(12)
+    print(nonce)
+    fp.close()
+    fq.close()
+    #exit()
     cip = ChaCha20Poly1305(key)
-
     while True:
         rnd=random.randint(1,32)
-
         if rnd%2==0:
             flag=c.read(rnd+32)
             if not flag:
