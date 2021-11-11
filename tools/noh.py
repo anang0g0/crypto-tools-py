@@ -43,26 +43,28 @@ def enc():
 
     while True:
         rnd=random.randint(1,32)
-        flag=f.read(rnd)
-        if not flag:
-            c.close()
-            f.close()
-            break
         
-        cipher= AES.new(key, AES.MODE_GCM)
-        ciphertext, tag= cipher.encrypt_and_digest(flag)
-        enc= cipher.nonce + ciphertext + tag
-        c.write(enc)
-    
-        rnd=random.randint(1,32)
-        ff=f.read(rnd)
-        if not ff:
-            c.close()
-            f.close()
-            break
+        if rnd%2==0:
+            flag=f.read(rnd)
+            if not flag:
+                c.close()
+                f.close()
+                break
 
-        ciphertext = cip.encrypt(nonce, ff)
-        c.write(ciphertext)
+            cipher= AES.new(key, AES.MODE_GCM)
+            ciphertext, tag= cipher.encrypt_and_digest(flag)
+            enc= cipher.nonce + ciphertext + tag
+            c.write(enc)
+        else:
+            rnd=random.randint(1,32)
+            ff=f.read(rnd)
+            if not ff:
+                c.close()
+                f.close()
+                break
+            ciphertext = cip.encrypt(nonce, ff)
+            c.write(ciphertext)
+        
 
 
         
@@ -75,29 +77,31 @@ def dec():
 
     while True:
         rnd=random.randint(1,32)
-        flag=c.read(rnd+32)
-        if not flag:
-            f.close()
-            c.close()
-            break
 
-        data = flag #bytes.fromhex(flag)
-        cipher = AES.new(key, AES.MODE_GCM, data[:16]) # nonce
-        try:
-            dec = cipher.decrypt_and_verify(data[16:-16], data[-16:]) # ciphertext, tag
-            print(dec) # b'my secret data'
-            f.write(dec)
-        except ValueError:
-            print("Decryption failed")
-        rnd=random.randint(1,32)
-        ciphertext=c.read(rnd+16)
-        if not ciphertext:
-            f.close()
-            c.close()
-            break
-        plaintext = cip.decrypt(nonce, ciphertext)
-        f.write(plaintext)
-        print(plaintext)
+        if rnd%2==0:
+            flag=c.read(rnd+32)
+            if not flag:
+                f.close()
+                c.close()
+                break
+            data = flag #bytes.fromhex(flag)
+            cipher = AES.new(key, AES.MODE_GCM, data[:16]) # nonce
+            try:
+                dec = cipher.decrypt_and_verify(data[16:-16], data[-16:]) # ciphertext, tag
+                print(dec) # b'my secret data'
+                f.write(dec)
+            except ValueError:
+                print("Decryption failed")
+        else:
+            rnd=random.randint(1,32)
+            ciphertext=c.read(rnd+16)
+            if not ciphertext:
+                f.close()
+                c.close()
+                break
+            plaintext = cip.decrypt(nonce, ciphertext)
+            f.write(plaintext)
+            print(plaintext)
         
 
 enc()
